@@ -49,6 +49,29 @@ func main() {
 					},
 				},
 			},
+			{
+				Name:   "render",
+				Action: RenderAction,
+				Usage:  "Render a raw dump",
+				Flags: []cli.Flag{
+					&cli.StringFlag{
+						Name:     "input-dir",
+						Usage:    "Input directory",
+						Required: true,
+					},
+					&cli.StringFlag{
+						Name:     "output-dir",
+						Aliases:  []string{"O"},
+						Usage:    "Output directory",
+						Required: true,
+					},
+					&cli.StringFlag{
+						Name:     "format",
+						Usage:    "Output format (e.g. html)",
+						Required: true,
+					},
+				},
+			},
 		},
 	}
 

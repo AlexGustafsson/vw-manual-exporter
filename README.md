@@ -13,13 +13,21 @@ This tools downloads the manual and allows you to store it as you wish.
 Dump the raw HTML content of the manual pages.
 
 ```shell
-vw dump --language en_GB --vin <VIN> --output-dir output
+vw dump --language en_GB --vin <VIN> --output-dir raw-output
 ```
 
 ```text
-output
+raw-output
 ├── 00bcc1f9f551bd370adf02e7216658d5_18_en_GB.html
 ├── 00f1c33f55c135920adf02e772d4b8fa_21_en_GB.html
 ...
 └── topic-tree.json
+```
+
+### Render
+
+Render raw content to standalone HTML files.
+
+```shell
+vw render --input-dir output --format html --output-dir rendered-output
 ```
