@@ -72,6 +72,13 @@ func DumpAction(ctx context.Context, cmd *cli.Command) error {
 		}
 	}
 
+	// Fetch stylesheet
+	slog.Debug("Downloading stylesheet")
+	err = downloadFile(ctx, "https://userguide.volkswagen.de/default/api/consumer/V4/stylesheet", filepath.Join(outputDirectory, "stylesheet.css"))
+	if err != nil {
+		return fmt.Errorf("failed to download stylesheet: %w", err)
+	}
+
 	// Write topics to disk
 	nodes := []vwapps.TopicTreeNode{topicTree.RootNode}
 	for i := 0; i < len(nodes); i++ {
@@ -93,6 +100,10 @@ func DumpAction(ctx context.Context, cmd *cli.Command) error {
 			continue
 		}
 
+		// TODO: We need to schedule downloads for images (or at least enable it?)
+		// If the goal is to just render the thing once using a web engine or the
+		// like, then we might as well skip it as they'll get implicitly fetched any
+		// way?
 		log.Debug("Fetching topic")
 		html, err := client.GetTopicHTML(ctx, vin, topicID)
 		if err != nil && err != vwapps.ErrTopicNotFound {
