@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log/slog"
 	"net/http"
 	"os"
@@ -34,6 +35,7 @@ func DumpAction(ctx context.Context, cmd *cli.Command) error {
 		return fmt.Errorf("failed to fetch topic tree: %w", err)
 	}
 
+	// Write topic tree to disk
 	{
 		content, err := json.Marshal(topicTree)
 		if err != nil {
@@ -46,6 +48,31 @@ func DumpAction(ctx context.Context, cmd *cli.Command) error {
 		}
 	}
 
+	// Try to fetch and write car photos to disk
+	{
+		views := []vwapps.VehicleView{
+			vwapps.VehicleViewSideLeft,
+			vwapps.VehicleViewSideRight,
+		}
+
+		for _, view := range views {
+			slog.Debug("Getting vehicle picture URL", slog.String("view", string(view)))
+			url, err := client.GetVehiclePictureURL(ctx, vin, view)
+			if err == nil {
+				slog.Debug("Downloading vehicle picture", slog.String("view", string(view)))
+				err := downloadFile(ctx, url, filepath.Join(outputDirectory, fmt.Sprintf("vehicle-%s.png", view)))
+				if err != nil {
+					slog.Warn("Failed to download vehicle picture", slog.String("view", string(view)), slog.Any("error", err))
+					continue
+				}
+			} else {
+				slog.Warn("Failed to get vehicle picture URL", slog.Any("error", err))
+				continue
+			}
+		}
+	}
+
+	// Write topics to disk
 	nodes := []vwapps.TopicTreeNode{topicTree.RootNode}
 	for i := 0; i < len(nodes); i++ {
 		node := nodes[i]
@@ -80,4 +107,30 @@ func DumpAction(ctx context.Context, cmd *cli.Command) error {
 	}
 
 	return nil
+}
+
+func downloadFile(ctx context.Context, url string, path string) error {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		return err
+	}
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode != 200 {
+		return fmt.Errorf("unexpected status code: %d", err)
+	}
+
+	file, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	_, err = io.Copy(file, res.Body)
+	return err
 }
