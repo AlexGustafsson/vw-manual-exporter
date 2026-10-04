@@ -33,3 +33,9 @@ vw render --input-dir output --format html > output.html
 ```
 
 You can use your favorite browser to render the HTML to a PDF.
+
+## Demo
+
+The rendered HTML as shown in Safari.
+
+![A screenshot of the HTML output viewed in Safari](./docs/demo.png)
