@@ -15,16 +15,10 @@ import (
 
 func RenderAction(ctx context.Context, cmd *cli.Command) error {
 	inputDirectory := cmd.String("input-dir")
-	outputDirectory := cmd.String("output-dir")
 	format := cmd.String("format")
 
 	if format != "html" {
 		return fmt.Errorf("unsupported format: %s", format)
-	}
-
-	err := os.MkdirAll(outputDirectory, 0777)
-	if err != nil {
-		return fmt.Errorf("failed to create output directory: %w", err)
 	}
 
 	var topicTree *vwapps.TopicTree
@@ -45,6 +39,10 @@ func RenderAction(ctx context.Context, cmd *cli.Command) error {
 		return fmt.Errorf("failed to read stylesheet: %w", err)
 	}
 
+	builder := &vwapps.HTMLBuilder{
+		Stylesheet: string(stylesheet),
+	}
+
 	// Write topics to disk
 	nodes := []vwapps.TopicTreeNode{topicTree.RootNode}
 	for i := 0; i < len(nodes); i++ {
@@ -61,16 +59,11 @@ func RenderAction(ctx context.Context, cmd *cli.Command) error {
 			return fmt.Errorf("failed to read topic: %w", err)
 		}
 
-		html, err := vwapps.RenderHTML(bytes.NewReader(content), string(stylesheet))
+		err = builder.AppendDocument(bytes.NewReader(content))
 		if err != nil {
 			return fmt.Errorf("failed to render topic: %w", err)
 		}
-
-		err = os.WriteFile(filepath.Join(outputDirectory, topicID+".html"), []byte(html), 0644)
-		if err != nil {
-			return fmt.Errorf("failed to write topic output: %w", err)
-		}
 	}
 
-	return nil
+	return builder.Render(os.Stdout)
 }

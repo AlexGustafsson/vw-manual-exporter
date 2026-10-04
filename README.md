@@ -26,8 +26,10 @@ raw-output
 
 ### Render
 
-Render raw content to standalone HTML files.
+Render raw content to a standalone HTML file.
 
 ```shell
-vw render --input-dir output --format html --output-dir rendered-output
+vw render --input-dir output --format html > output.html
 ```
+
+You can use your favorite browser to render the HTML to a PDF.

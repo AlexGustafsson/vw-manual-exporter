@@ -60,12 +60,6 @@ func main() {
 						Required: true,
 					},
 					&cli.StringFlag{
-						Name:     "output-dir",
-						Aliases:  []string{"O"},
-						Usage:    "Output directory",
-						Required: true,
-					},
-					&cli.StringFlag{
 						Name:     "format",
 						Usage:    "Output format (e.g. html)",
 						Required: true,
